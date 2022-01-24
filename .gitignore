@@ -1,0 +1,7 @@
+Scripts/
+Include/
+Lib/
+pyvenv.cfg
+.env
+media/
+staticfiles/

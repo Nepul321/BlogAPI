@@ -5,3 +5,4 @@ pyvenv.cfg
 .env
 media/
 staticfiles/
+db.sqlite3

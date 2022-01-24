@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+Blog API - Home
+{% endblock title %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static '/css/home.css' %}" />
+{% endblock css %}
+
+{% block content %}
+<div class="container my-5 text-center text-white">
+    <h1>Blog API - Home</h1>
+</div>
+
+{% endblock content %}
+
+{% block js %}
+<script src="{% static '/js/home.js' %}"></script>
+{% endblock js %}

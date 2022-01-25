@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-def HomeView(request):
+def HomeView(request, *args, **kwargs):
     template = "base/home.html"
     context = {
 

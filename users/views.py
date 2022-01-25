@@ -64,6 +64,17 @@ def LoginView(request):
 
     return response
 
+@api_view(['GET'])
+def LoggedInUserView(request):
+    token = request.COOKIES.get('jwt')
+    payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+
+    user = User.objects.filter(id=payload['id']).first()
+
+    serializer = UserSerializer(user)
+
+    return Response(serializer.data, status=200)
+
 @api_view(['POST'])
 def LogoutView(request):
     response = Response()

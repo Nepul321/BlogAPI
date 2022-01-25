@@ -7,7 +7,7 @@ from base.models import User
 import jwt
 import datetime
 from rest_framework.decorators import api_view
-from .decorators import login_required
+from .decorators import login_required, unauthenticated_user
 
 @api_view(['GET'])
 def UserListView(request):
@@ -17,6 +17,7 @@ def UserListView(request):
     return Response(data, status=200)
 
 @api_view(['POST'])
+@unauthenticated_user
 def RegisterUserView(request):
     serializer = CreateUserSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
@@ -26,6 +27,7 @@ def RegisterUserView(request):
     return Response({"detail" : "Invalid data"}, status=400)
 
 @api_view(['POST'])
+@unauthenticated_user
 def LoginView(request):
     data = request.data
     email = data['email']

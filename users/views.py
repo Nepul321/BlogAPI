@@ -7,6 +7,7 @@ from base.models import User
 import jwt
 import datetime
 from rest_framework.decorators import api_view
+from .decorators import login_required
 
 @api_view(['GET'])
 def UserListView(request):
@@ -65,6 +66,7 @@ def LoginView(request):
     return response
 
 @api_view(['GET'])
+@login_required
 def LoggedInUserView(request):
     token = request.COOKIES.get('jwt')
     payload = jwt.decode(token, 'secret', algorithms=['HS256'])
@@ -76,6 +78,7 @@ def LoggedInUserView(request):
     return Response(serializer.data, status=200)
 
 @api_view(['POST'])
+@login_required
 def LogoutView(request):
     response = Response()
     response.delete_cookie('jwt')

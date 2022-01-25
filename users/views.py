@@ -4,6 +4,8 @@ from .serializers import (
     CreateUserSerializer
 )
 from base.models import User
+import jwt
+import datetime
 from rest_framework.decorators import api_view
 
 @api_view(['GET'])
@@ -21,3 +23,43 @@ def RegisterUserView(request):
         return Response({"detail" : "Account created"}, status=201)
 
     return Response({"message" : "Invalid data"}, status=400)
+
+@api_view(['POST'])
+def LoginView(request):
+    data = request.data
+    email = data['email']
+    password = data['password']
+
+    if not email:
+        return Response({"message" : "Email not entered"}, status=204)
+
+    if not password:
+        return Response({"message" : "Password not given"}, status=204)
+
+    qs = User.objects.filter(email=email)
+    if not qs:
+        return Response({"message" : "User not found"}, status=404)
+
+    user = qs.first()
+
+    if not user.check_password(password):
+        return Response({"message" : "Wrong password"}, status=401)
+
+    payload = {
+        'id': user.id,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+        'iat': datetime.datetime.utcnow()
+    }
+
+    token = jwt.encode(payload, 'secret', algorithm='HS256')
+
+    response = Response()
+
+    response.status_code = 200
+
+    response.set_cookie(key="jwt", value=token, httponly=True)
+    response.data = {
+        "jwt" : token
+    }
+
+    return response

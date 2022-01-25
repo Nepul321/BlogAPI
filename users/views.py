@@ -22,7 +22,7 @@ def RegisterUserView(request):
         serializer.save()
         return Response({"detail" : "Account created"}, status=201)
 
-    return Response({"message" : "Invalid data"}, status=400)
+    return Response({"detail" : "Invalid data"}, status=400)
 
 @api_view(['POST'])
 def LoginView(request):
@@ -62,4 +62,14 @@ def LoginView(request):
         "jwt" : token
     }
 
+    return response
+
+@api_view(['POST'])
+def LogoutView(request):
+    response = Response()
+    response.delete_cookie('jwt')
+    response.status_code = 200
+    response.data = {
+        "detail" : "Logged out successfully"
+    }
     return response

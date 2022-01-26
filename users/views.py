@@ -67,13 +67,19 @@ def LoginView(request):
 
     return response
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @login_required
 def LoggedInUserView(request):
     token = request.COOKIES.get('jwt')
     payload = jwt.decode(token, 'secret', algorithms=['HS256'])
 
     user = User.objects.filter(id=payload['id']).first()
+
+    if request.method == "POST":
+        serializer = UserSerializer(instance=user, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=200)
 
     serializer = UserSerializer(user)
 

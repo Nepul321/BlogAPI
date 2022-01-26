@@ -1,7 +1,7 @@
-from email.policy import default
-from statistics import mode
 from django.db import models
-from base.models import User
+from django.conf import settings
+
+User = settings.AUTH_USER_MODEL
 
 class UserKey(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

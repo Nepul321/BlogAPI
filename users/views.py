@@ -19,7 +19,8 @@ def UserListView(request):
 @api_view(['POST'])
 @unauthenticated_user
 def RegisterUserView(request):
-    serializer = CreateUserSerializer(data=request.data)
+    data = request.data
+    serializer = CreateUserSerializer(data=data)
     if serializer.is_valid(raise_exception=True):
         serializer.save()
         return Response({"detail" : "Account created"}, status=201)
@@ -44,6 +45,9 @@ def LoginView(request):
         return Response({"message" : "User not found"}, status=404)
 
     user = qs.first()
+
+    if user.is_active == False:
+        return Response({"message" : "User is not active"})
 
     if not user.check_password(password):
         return Response({"message" : "Wrong password"}, status=401)

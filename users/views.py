@@ -1,4 +1,6 @@
 from rest_framework.response import Response
+
+from users.models import UserKey
 from .serializers import (
     UserSerializer,
     CreateUserSerializer
@@ -8,6 +10,14 @@ import jwt
 import datetime
 from rest_framework.decorators import api_view
 from .decorators import login_required, unauthenticated_user
+from src.settings import EMAIL_HOST_USER
+from django.core.mail import send_mail
+from src.settings import DEBUG
+
+if DEBUG:
+    current_host = "http://localhost:8000"
+else:
+    current_host = ""
 
 @api_view(['GET'])
 def UserListView(request):
@@ -23,7 +33,14 @@ def RegisterUserView(request):
     serializer = CreateUserSerializer(data=data)
     if serializer.is_valid(raise_exception=True):
         serializer.save()
-        return Response({"detail" : "Account created"}, status=201)
+        qs = UserKey.objects.filter(user__email=data['email'])
+        obj = qs.first()
+        subject = "Verify your email"
+        message = f"Thanks for signing up. \n Verify your email - {current_host}/api/users/{obj.key}/"
+        email_from = EMAIL_HOST_USER
+        recipient_list = [obj.user.email, ]
+        send_mail(subject, message, email_from, recipient_list)
+        return Response({"detail" : "Account created. Verification email sent"}, status=201)
 
     return Response({"detail" : "Invalid data"}, status=400)
 

@@ -36,7 +36,7 @@ def RegisterUserView(request):
         qs = UserKey.objects.filter(user__email=data['email'])
         obj = qs.first()
         subject = "Verify your email"
-        message = f"Thanks for signing up. \n Verify your email - {current_host}/api/users/{obj.key}/"
+        message = f"Thanks for signing up. \n Verify your email - {current_host}/api/users/{obj.key}/activate/"
         email_from = EMAIL_HOST_USER
         recipient_list = [obj.user.email, ]
         send_mail(subject, message, email_from, recipient_list)

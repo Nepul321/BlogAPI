@@ -116,3 +116,22 @@ def LogoutView(request):
         "detail" : "Logged out successfully"
     }
     return response
+
+@api_view(['GET'])
+@unauthenticated_user
+def AccountVerification(request, token):
+    qs = UserKey.objects.filter(key=token)
+    if not qs:
+        return Response({"detail" : "Verification token not found"}) 
+    not_activated = qs.filter(activated=False)
+    if not not_activated:
+        return Response({"detail" : "Verification token activated"})
+    obj = not_activated.first()
+    obj.activated = True
+    obj.user.is_active = True
+    obj.save()
+    obj.user.save()
+    return Response({"detail" : "Account activated. Login."})
+
+    
+

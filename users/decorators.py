@@ -39,4 +39,4 @@ def unauthenticated_user(view_func):
         if user:
             return Response({"message" : "You are logged in"})
         return view_func(request, *args, **kwargs)
-    return wrapper_func  
+    return wrapper_func

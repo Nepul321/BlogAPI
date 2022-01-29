@@ -6,7 +6,8 @@ from .views import (
     RegisterUserView,
     LoginView,
     LogoutView,
-    LoggedInUserView
+    LoggedInUserView,
+    ChangePasswordView
 )
 
 urlpatterns = [
@@ -16,4 +17,5 @@ urlpatterns = [
     path('logout/', LogoutView, name="user-logout"),
     path('user/', LoggedInUserView, name="user-logged-in"),
     path('<str:token>/activate/', AccountVerification, name="user-account-activate"),
+    path('password/', ChangePasswordView, name="user-password"),
 ]

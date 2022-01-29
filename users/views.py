@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from users.models import UserKey
 from .serializers import (
     UserSerializer,
-    CreateUserSerializer
+    CreateUserSerializer,
+    ChangePasswordSerializer
 )
 from base.models import User
 import jwt
@@ -125,7 +126,7 @@ def AccountVerification(request, token):
         return Response({"detail" : "Verification token not found"}) 
     not_activated = qs.filter(activated=False)
     if not not_activated:
-        return Response({"detail" : "Verification token activated"})
+        return Response({"detail" : "Verification token already activated"})
     obj = not_activated.first()
     obj.activated = True
     obj.user.is_active = True
@@ -133,5 +134,34 @@ def AccountVerification(request, token):
     obj.user.save()
     return Response({"detail" : "Account activated. Login."})
 
+@api_view(['POST'])
+@login_required
+def ChangePasswordView(request):
+    token = request.COOKIES.get('jwt')
+    payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+    data = request.data
+    user = User.objects.filter(id=payload['id']).first()
+    context = {'user' : user}
+    serializer = ChangePasswordSerializer(data=data, context=context)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    payloadnew = {
+        'id': user.id,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+        'iat': datetime.datetime.utcnow()
+    }
+    newtoken = jwt.encode(payloadnew, 'secret', algorithm='HS256')
+
+    response = Response()
+
+
+    response.status_code = 200
+
+    response.set_cookie(key="jwt", value=newtoken, httponly=True)
+    response.data = {
+        "jwt" : newtoken
+    }
+
+    return response
     
 

@@ -2,8 +2,8 @@ from rest_framework.response import Response
 import jwt
 from base.models import User
 
-def login_required(view_func):
-    def wrapper_func(request, *args, **kwargs):
+def login_required(view):
+    def wrapper_function(request, *args, **kwargs):
         token = request.COOKIES.get('jwt')
         if not token:
            return Response({"message" : "Unauthenticated"}, status=401)
@@ -18,12 +18,12 @@ def login_required(view_func):
             return Response({"message" : "Unauthenticated"}, status=401)
 
         else:
-            return view_func(request, *args, **kwargs)
+            return view(request, *args, **kwargs)
 
-    return wrapper_func
+    return wrapper_function
 
 def unauthenticated_user(view_func):
-    def wrapper_func(request, *args, **kwargs):
+    def wrapper_function(request, *args, **kwargs):
         token = request.COOKIES.get("jwt")
         user = None
         if token:
@@ -39,4 +39,4 @@ def unauthenticated_user(view_func):
         if user:
             return Response({"message" : "You are logged in"})
         return view_func(request, *args, **kwargs)
-    return wrapper_func
+    return wrapper_function

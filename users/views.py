@@ -1,10 +1,15 @@
+import uuid
 from rest_framework.response import Response
 
-from users.models import UserKey
+from users.models import (
+    UserKey,
+    PasswordResetEvent
+)
 from .serializers import (
     UserSerializer,
     CreateUserSerializer,
-    ChangePasswordSerializer
+    ChangePasswordSerializer,
+    ResetPasswordSerializer
 )
 from base.models import User
 import jwt
@@ -118,7 +123,7 @@ def LogoutView(request):
     }
     return response
 
-@api_view(['GET'])
+@api_view(['POST'])
 @unauthenticated_user
 def AccountVerification(request, token):
     qs = UserKey.objects.filter(key=token)
@@ -164,4 +169,47 @@ def ChangePasswordView(request):
 
     return response
     
+@api_view(['POST'])
+def PasswordResetView(request):
+    data = request.data
+    email = data['email'] or None
+    if not email or email == "":
+        return Response({"detail" : "No email given"})
+    qs = User.objects.filter(email=email)
+    if not qs:
+        return Response({"detail" : "User with the email does not exist"})
 
+    obj = qs.first()
+    event = PasswordResetEvent.objects.create(
+        user=obj,
+        key=uuid.uuid4()
+    )
+    event.save()
+    subject = "Reset Your Password"
+    message = f"Reset Your Password - {current_host}/api/users/password/reset/{event.key}/"
+    email_from = EMAIL_HOST_USER
+    recipient_list = [obj.email, ]
+    send_mail(subject, message, email_from, recipient_list)
+    return Response(data, status=200)
+
+@api_view(['GET', 'POST'])
+def PasswordResetFormView(request, token):
+    qs = PasswordResetEvent.objects.filter(key=token)
+    if not qs:
+        return Response({"detail" : "Token does not exist"})
+
+    obj = qs.first()
+    if obj.activated == True:
+        return Response({"detail" : "This token has already been used"})
+
+    if request.method == "POST":
+        context = {"user" : obj.user}
+        data = request.data
+        serializer = ResetPasswordSerializer(data=data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        obj.activated = True
+        obj.save()
+        return Response({"detail" : "Successfully Password reset successful"}, status=200)
+
+    return Response({}, status=200)

@@ -6,7 +6,9 @@ from .views import (
     LoginView,
     LogoutView,
     LoggedInUserView,
-    ChangePasswordView
+    ChangePasswordView,
+    PasswordResetView,
+    PasswordResetFormView
 )
 
 urlpatterns = [
@@ -17,4 +19,6 @@ urlpatterns = [
     path('user/', LoggedInUserView, name="user-logged-in"),
     path('<str:token>/activate/', AccountVerification, name="user-account-activate"),
     path('password/', ChangePasswordView, name="user-password"),
+    path('password/reset/', PasswordResetView, name="user-password-reset"),
+    path('password/reset/<str:token>/', PasswordResetFormView, name="user-password-reset-form")
 ]

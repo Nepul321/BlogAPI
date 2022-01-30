@@ -50,3 +50,20 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.set_password(password)
         user.save()
         return user
+
+class ResetPasswordSerializer(serializers.Serializer):
+    new_password1 = serializers.CharField(max_length=128, write_only=True, required=True)
+    new_password2 = serializers.CharField(max_length=128, write_only=True, required=True)
+
+    def validate(self, data):
+        if data['new_password1'] != data['new_password2']:
+            raise serializers.ValidationError({'new_password2': _("The two password fields didn't match.")})
+        password_validation.validate_password(data['new_password1'], self.context['user'])
+        return data
+
+    def save(self, **kwargs):
+        password = self.validated_data['new_password1']
+        user = self.context['user']
+        user.set_password(password)
+        user.save()
+        return user    

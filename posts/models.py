@@ -10,3 +10,6 @@ class Post(models.Model):
     date = models.DateField(auto_now_add=True)
     datetime = models.DateTimeField(auto_now_add=True)
     likes = models.ManyToManyField(User, related_name="post_likes", blank=True)
+
+    class Meta:
+        ordering = ['-datetime']

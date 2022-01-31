@@ -39,5 +39,5 @@ class PostSerializer(serializers.ModelSerializer):
         if not user:
             return False
 
-        if user == obj.author:
+        if user == obj.author or user.is_superuser:
             return True

@@ -30,7 +30,7 @@ def PostDetailView(request, id):
         return Response({"detail" : "Unauthenticated"}, status=403)
     user = User.objects.filter(id=payload['id']).first()
     if not user:
-        return Response({"detali" : "Unauthenticated"}, status=403)
+        return Response({"detail" : "Unauthenticated"}, status=403)
     if request.method == "DELETE":
         if obj.author == user or user.is_superuser:
             obj.delete()

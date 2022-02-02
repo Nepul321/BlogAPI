@@ -14,13 +14,28 @@ def PostsListView(request):
     data = serializer.data
     return Response(data, status=200)
 
-@api_view(['GET'])
+@api_view(['GET', 'DELETE'])
 def PostDetailView(request, id):
     context = {"request" : request}
     qs = Post.objects.filter(id=id)
     if not qs:
         return Response({"detail" : "Post does not exist"}, status=404)
     obj = qs.first()
+    token = request.COOKIES.get("jwt")
+    if not token:
+        return Response({"detail" : "Unauthenticated"}, status=403)
+    try:
+        payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        return Response({"detail" : "Unauthenticated"}, status=403)
+    user = User.objects.filter(id=payload['id']).first()
+    if not user:
+        return Response({"detali" : "Unauthenticated"}, status=403)
+    if request.method == "DELETE":
+        if obj.author == user or user.is_superuser:
+            obj.delete()
+            return Response({"detail" : "Post deleted"}, status=200)
+    
     serializer = PostSerializer(obj, context=context)
     data = serializer.data
     return Response(data, status=200)

@@ -10,3 +10,14 @@ def PostsListView(request):
     serializer = PostSerializer(qs, many=True, context=context)
     data = serializer.data
     return Response(data, status=200)
+
+@api_view(['GET'])
+def PostDetailView(request, id):
+    context = {"request" : request}
+    qs = Post.objects.filter(id=id)
+    if not qs:
+        return Response({"detail" : "Post does not exist"}, status=404)
+    obj = qs.first()
+    serializer = PostSerializer(obj, context=context)
+    data = serializer.data
+    return Response(data, status=200)

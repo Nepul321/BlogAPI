@@ -6,16 +6,15 @@ def login_required(view):
     def wrapper_function(request, *args, **kwargs):
         token = request.COOKIES.get('jwt')
         if not token:
-           return Response({"message" : "Unauthenticated"}, status=401)
+           return Response({"detail" : "Unauthenticated"}, status=401)
         try:
             payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+            user = User.objects.filter(id=payload['id']).first()
         except jwt.ExpiredSignatureError:
-            return Response({"message" : "Unauthenticated"}, status=401)
-
-        user = User.objects.filter(id=payload['id']).first()
+            return Response({"detail" : "Unauthenticated"}, status=401)
 
         if not user:
-            return Response({"message" : "Unauthenticated"}, status=401)
+            return Response({"detail" : "Unauthenticated"}, status=401)
 
         else:
             return view(request, *args, **kwargs)
@@ -27,7 +26,7 @@ def unauthenticated_user(view_func):
         token = request.COOKIES.get("jwt")
         user = None
         if token:
-            return Response({"message" : "You are logged in"})
+            return Response({"detail" : "You are logged in"})
 
         try:
             if token:
@@ -37,6 +36,6 @@ def unauthenticated_user(view_func):
             pass
         
         if user:
-            return Response({"message" : "You are logged in"})
+            return Response({"detail" : "You are logged in"})
         return view_func(request, *args, **kwargs)
     return wrapper_function

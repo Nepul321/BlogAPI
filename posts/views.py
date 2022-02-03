@@ -1,3 +1,4 @@
+from msilib.schema import SelfReg
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Post
@@ -14,7 +15,7 @@ def PostsListView(request):
     data = serializer.data
     return Response(data, status=200)
 
-@api_view(['GET', 'DELETE'])
+@api_view(['GET', 'DELETE', 'POST'])
 def PostDetailView(request, id):
     context = {"request" : request}
     qs = Post.objects.filter(id=id)
@@ -31,6 +32,12 @@ def PostDetailView(request, id):
     user = User.objects.filter(id=payload['id']).first()
     if not user:
         return Response({"detail" : "Unauthenticated"}, status=403)
+    if request.method == "POST":
+        serializer = PostSerializer(instance=obj, data=request.data, context=context)
+        if serializer.is_valid(raise_exception=True):
+            if obj.author == user:
+                serializer.save()
+                return Response(serializer.data, status=200)
     if request.method == "DELETE":
         if obj.author == user or user.is_superuser:
             obj.delete()

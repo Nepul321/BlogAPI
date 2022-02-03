@@ -5,6 +5,8 @@ from .models import (
 import jwt
 from base.models import User
 
+POST_VALIDATE = ['like', 'unlike']
+
 class UserPublicSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=False, allow_blank=True, read_only=True)
     class Meta:
@@ -41,3 +43,12 @@ class PostSerializer(serializers.ModelSerializer):
 
         if user == obj.author or user.is_superuser:
             return True
+
+class PostActionSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    action = serializers.CharField()
+    def validate_action(self, value):
+        value = value.lower().strip()
+        if value not in POST_VALIDATE:
+            raise serializers.ValidationError("This is not a valid action")
+        return value

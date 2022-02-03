@@ -33,7 +33,7 @@ def unauthenticated_user(view_func):
                 payload = jwt.decode(token, 'secret', algorithms=['HS256'])
                 user = User.objects.filter(id=payload['id']).first()
         except jwt.ExpiredSignatureError:
-            pass
+            return view_func(request, *args, **kwargs)
         
         if user:
             return Response({"detail" : "You are logged in"})

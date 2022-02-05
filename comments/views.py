@@ -1,3 +1,4 @@
+from http import server
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import (
@@ -7,6 +8,8 @@ from .serializers import (
     CommentActionSerializer,
     CommentSerializer
 )
+
+from users.decorators import login_required
 
 import jwt
 
@@ -56,6 +59,7 @@ def CommentDetailDeleteView(request, id):
     return Response(data, status=200)
 
 @api_view(['POST'])
+@login_required
 def CommentLikeUnlikeView(request):
     serializer = CommentActionSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -79,4 +83,29 @@ def CommentLikeUnlikeView(request):
         serializer = CommentSerializer(obj)
         return Response(serializer.data, status=200)
 
-    return Response({}, status=401) 
+    return Response({}, status=401)
+
+@api_view(['POST'])
+@login_required
+def CommentCreateView(request):
+    data = request.data
+    post_id = data.get("post")
+    if not post_id:
+        return Response({"detail" : "Post not given"}, status=401)
+    serializer = CommentSerializer(data=data)
+    serializer.is_valid(raise_exception=True)
+    posts = Post.objects.filter(id=int(data.get("post")))
+    if not posts:
+        return Response({"detail" : "Post does not exist"}, status=404)
+
+    post = posts.first()
+    token = request.COOKIES.get("jwt")
+    payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+    user = User.objects.filter(id=payload['id']).first()
+
+    serializer.save(
+      user=user,
+      post=post
+    )
+
+    return Response(serializer.data, status=201)

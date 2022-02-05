@@ -3,7 +3,8 @@ from .views import (
     CommentLikeUnlikeView,
     CommentListView,
     PostCommentListView,
-    CommentDetailDeleteView
+    CommentDetailDeleteView,
+    CommentCreateView
 )
 
 from django.urls import path
@@ -12,5 +13,6 @@ urlpatterns = [
     path('', CommentListView, name="comments-list"),
     path('post/<int:id>/', PostCommentListView, name="post-comments-list"),
     path('<int:id>/', CommentDetailDeleteView, name="comment-details-delete"),
-    path('action/', CommentLikeUnlikeView, name="comments-like-unlike-view"),
+    path('action/', CommentLikeUnlikeView, name="comments-like-unlike"),
+    path('create/', CommentCreateView, name="comment-create"),
 ]

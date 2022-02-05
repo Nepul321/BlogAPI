@@ -1,6 +1,6 @@
 # Blog API
 
-A simple blog API with,
+A simple restful blog API with,
  - Python
  - Django
  - Django Rest Framework

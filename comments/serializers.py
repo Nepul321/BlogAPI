@@ -1,4 +1,3 @@
-import jwt
 from rest_framework import serializers
 from base.models import User
 from .models import (
@@ -21,7 +20,7 @@ class CommentSerializer(serializers.ModelSerializer):
     likes = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Comment
-        fields = ('id', 'title', 'user', 'content', 'date', 'likes')
+        fields = ('id','user', 'content', 'date', 'likes')
 
     def get_likes(self, obj):
         return obj.likes.count()

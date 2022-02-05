@@ -54,3 +54,29 @@ def CommentDetailDeleteView(request, id):
     serializer = CommentSerializer(obj)
     data = serializer.data
     return Response(data, status=200)
+
+@api_view(['POST'])
+def CommentLikeUnlikeView(request):
+    serializer = CommentActionSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+    id = data.get("id")
+    action = data.get("action")
+    qs = Comment.objects.filter(id=id)
+    if not qs:
+        return Response({"detail" : "Comment does not exist"}, status=404)
+    obj = qs.first()
+    token = request.COOKIES.get("jwt")
+    payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+    user = User.objects.filter(id=payload['id']).first()
+
+    if action == "like":
+        obj.likes.add(user)
+        serializer = CommentSerializer(obj)
+        return Response(serializer.data, status=200)
+    elif action == "unlike":
+        obj.likes.remove(user)
+        serializer = CommentSerializer(obj)
+        return Response(serializer.data, status=200)
+
+    return Response({}, status=401) 

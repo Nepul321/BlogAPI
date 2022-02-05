@@ -8,6 +8,10 @@ from .serializers import (
     CommentSerializer
 )
 
+import jwt
+
+from base.models import User
+
 from posts.models import Post
 
 @api_view(['GET'])
@@ -25,5 +29,28 @@ def PostCommentListView(request, id):
     obj = postQs.first()
     commentQs = Comment.objects.filter(post=obj)
     serializer = CommentSerializer(commentQs, many=True)
+    data = serializer.data
+    return Response(data, status=200)
+
+@api_view(['GET', 'DELETE'])
+def CommentDetailDeleteView(request, id):
+    qs = Comment.objects.filter(id=id)
+    if not qs:
+        return Response({"detail" : "Comment not found"}, status=404)
+
+    obj = qs.first()
+    token = request.COOKIES.get("jwt")
+    if not token:
+        return Response({"detail" : "Unauthenticated"}, status=403)
+    try:
+        payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        return Response({"detail" : "Unauthenticated"}, status=403)
+    user = User.objects.filter(id=payload['id']).first()
+    if request.method == "DELETE":
+        if user == obj.user or user.is_superuser:
+            obj.delete()
+            return Response({"detail" : "Comment deleted"}, status=200)
+    serializer = CommentSerializer(obj)
     data = serializer.data
     return Response(data, status=200)

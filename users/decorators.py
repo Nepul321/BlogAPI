@@ -25,15 +25,12 @@ def unauthenticated_user(view_func):
     def wrapper_function(request, *args, **kwargs):
         token = request.COOKIES.get("jwt")
         user = None
-        if token:
-            return Response({"detail" : "You are logged in"})
-
         try:
             if token:
                 payload = jwt.decode(token, 'secret', algorithms=['HS256'])
                 user = User.objects.filter(id=payload['id']).first()
         except jwt.ExpiredSignatureError:
-               return view_func(request, *args, **kwargs)
+               pass
         
         if user:
             return Response({"detail" : "You are logged in"})

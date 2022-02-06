@@ -43,14 +43,14 @@ def CommentDetailDeleteView(request, id):
 
     obj = qs.first()
     token = request.COOKIES.get("jwt")
-    if not token:
-        return Response({"detail" : "Unauthenticated"}, status=403)
-    try:
-        payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-    except jwt.ExpiredSignatureError:
-        return Response({"detail" : "Unauthenticated"}, status=403)
-    user = User.objects.filter(id=payload['id']).first()
     if request.method == "DELETE":
+        if not token:
+            return Response({"detail" : "Unauthenticated"}, status=403)
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response({"detail" : "Unauthenticated"}, status=403)
+        user = User.objects.filter(id=payload['id']).first()
         if user == obj.user or user.is_superuser:
             obj.delete()
             return Response({"detail" : "Comment deleted"}, status=200)

@@ -83,3 +83,28 @@ def ReplyLikeUnlikeView(request):
         return Response(serializer.data, status=200)
 
     return Response({}, status=401)
+
+@api_view(['POST'])
+@login_required
+def ReplyCreateView(request):
+    data = request.data
+    comment_id = data.get("comment")
+    if not comment_id:
+        return Response({"detail" : "Comment not given"}, status=401)
+    serializer = ReplySerializer(data=data)
+    serializer.is_valid(raise_exception=True)
+    comments = Comment.objects.filter(id=int(data.get("comment")))
+    if not comments:
+        return Response({"detail" : "Comment does not exist"}, status=404)
+
+    comment = comments.first()
+    token = request.COOKIES.get("jwt")
+    payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+    user = User.objects.filter(id=payload['id']).first()
+
+    serializer.save(
+      user=user,
+      comment=comment
+    )
+
+    return Response(serializer.data, status=201)

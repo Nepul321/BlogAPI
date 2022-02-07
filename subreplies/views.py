@@ -84,3 +84,28 @@ def SubReplyLikeUnlikeView(request):
         return Response(serializer.data, status=200)
 
     return Response({}, status=401)
+
+@api_view(['POST'])
+@login_required
+def SubReplyCreateView(request):
+    data = request.data
+    reply_id = data.get("reply")
+    if not reply_id:
+        return Response({"detail" : "Reply not given"}, status=401)
+    serializer = SubReplySerializer(data=data)
+    serializer.is_valid(raise_exception=True)
+    replies = Reply.objects.filter(id=int(data.get("reply")))
+    if not replies:
+        return Response({"detail" : "Reply does not exist"}, status=404)
+
+    reply = replies.first()
+    token = request.COOKIES.get("jwt")
+    payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+    user = User.objects.filter(id=payload['id']).first()
+
+    serializer.save(
+      user=user,
+      reply=reply
+    )
+
+    return Response(serializer.data, status=201)

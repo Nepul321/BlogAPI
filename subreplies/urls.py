@@ -4,7 +4,8 @@ from .views import (
     SubReplyDetailDeleteView,
     SubreplylistView,
     ReplySubRepliesView,
-    SubReplyLikeUnlikeView
+    SubReplyLikeUnlikeView,
+    SubReplyCreateView
 )
 
 urlpatterns = [
@@ -12,4 +13,5 @@ urlpatterns = [
     path('replies/<int:id>/', ReplySubRepliesView, name="reply-subreply-view"),
     path('<int:id>/', SubReplyDetailDeleteView, name="sub-reply-detail-delete-view"),
     path('action/', SubReplyLikeUnlikeView, name="sub-reply-like-unlike-view"),
+    path('create/', SubReplyCreateView, name="sub-reply-create-view"),
 ]

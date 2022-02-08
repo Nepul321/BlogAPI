@@ -1,3 +1,4 @@
+from email.policy import default
 from django.db import models
 from django.conf import settings
 
@@ -8,6 +9,7 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     date = models.DateField(auto_now_add=True)
+    is_active = models.BooleanField(default=False)
     datetime = models.DateTimeField(auto_now_add=True)
     likes = models.ManyToManyField(User, related_name="post_likes", blank=True)
 

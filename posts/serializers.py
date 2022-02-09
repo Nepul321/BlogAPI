@@ -4,17 +4,9 @@ from .models import (
 )
 import jwt
 from base.models import User
+from base.serializers import UserPublicSerializer
 
 POST_VALIDATE = ['like', 'unlike']
-
-class UserPublicSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(required=False, allow_blank=True, read_only=True)
-    class Meta:
-        model = User
-        fields = [
-            'username',  
-            'name',
-        ]
 
 class PostSerializer(serializers.ModelSerializer):
     author = UserPublicSerializer(read_only=True)

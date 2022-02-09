@@ -1,19 +1,10 @@
 from rest_framework import serializers
-from base.models import User
+from base.serializers import UserPublicSerializer
 from .models import (
     Comment
 )
 
 COMMENT_VALIDATE = ['like', 'unlike']
-
-class UserPublicSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(required=False, allow_blank=True, read_only=True)
-    class Meta:
-        model = User
-        fields = [
-            'username',  
-            'name',
-        ]
 
 class CommentSerializer(serializers.ModelSerializer):
     user = UserPublicSerializer(read_only=True)

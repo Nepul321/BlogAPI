@@ -22,7 +22,7 @@ class PostSerializer(serializers.ModelSerializer):
     can_edit = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Post
-        fields = ('id', 'title', 'author', 'content', 'date', 'likes', 'can_edit')
+        fields = ('id', 'title', 'author', 'content', 'date', 'likes', 'can_edit', 'is_active')
 
     def get_likes(self, obj):
         return obj.likes.count()

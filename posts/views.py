@@ -22,22 +22,32 @@ def PostDetailView(request, id):
         return Response({"detail" : "Post does not exist"}, status=404)
     obj = qs.first()
     token = request.COOKIES.get("jwt")
-    if not token:
-        return Response({"detail" : "Unauthenticated"}, status=403)
-    try:
-        payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-    except jwt.ExpiredSignatureError:
-        return Response({"detail" : "Unauthenticated"}, status=403)
-    user = User.objects.filter(id=payload['id']).first()
-    if not user:
-        return Response({"detail" : "Unauthenticated"}, status=403)
     if request.method == "POST":
+        if not token:
+            return Response({"detail" : "Unauthenticated"}, status=403)
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response({"detail" : "Unauthenticated"}, status=403)
+        user = User.objects.filter(id=payload['id']).first()
         serializer = PostSerializer(instance=obj, data=request.data, context=context)
+        if not user:
+            return Response({"detail" : "Unauthenticated"}, status=403)
         if serializer.is_valid(raise_exception=True):
             if obj.author == user:
                 serializer.save()
                 return Response(serializer.data, status=200)
     if request.method == "DELETE":
+        if not token:
+            return Response({"detail" : "Unauthenticated"}, status=403)
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response({"detail" : "Unauthenticated"}, status=403)
+        user = User.objects.filter(id=payload['id']).first()
+        serializer = PostSerializer(instance=obj, data=request.data, context=context)
+        if not user:
+            return Response({"detail" : "Unauthenticated"}, status=403)
         if obj.author == user or user.is_superuser:
             obj.delete()
             return Response({"detail" : "Post deleted"}, status=200)

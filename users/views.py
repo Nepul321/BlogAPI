@@ -97,7 +97,8 @@ def LoginView(request):
 @api_view(['GET', 'POST'])
 @login_required
 def LoggedInUserView(request):
-    token = request.COOKIES.get('jwt')
+    auth = request.headers['Authorization']
+    token = auth.replace("Bearer ", "")
     payload = jwt.decode(token, 'secret', algorithms=['HS256'])
 
     user = User.objects.filter(id=payload['id']).first()
@@ -142,7 +143,8 @@ def AccountVerification(request, token):
 @api_view(['POST'])
 @login_required
 def ChangePasswordView(request):
-    token = request.COOKIES.get('jwt')
+    auth = request.headers['Authorization']
+    token = auth.replace("Bearer ", "")
     payload = jwt.decode(token, 'secret', algorithms=['HS256'])
     data = request.data
     user = User.objects.filter(id=payload['id']).first()

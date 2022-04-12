@@ -21,7 +21,11 @@ def PostDetailView(request, id):
     if not qs:
         return Response({"detail" : "Post does not exist"}, status=404)
     obj = qs.first()
-    token = request.COOKIES.get("jwt")
+    try:
+        auth = request.headers['Authorization']
+        token = auth.replace("Bearer ", "")
+    except:
+        token = None
     if request.method == "POST":
         if not token:
             return Response({"detail" : "Unauthenticated"}, status=403)
@@ -61,7 +65,8 @@ def PostDetailView(request, id):
 def PostCreateView(request):
     context = {"request" : request}
     serializer = PostSerializer(data=request.data, context=context)
-    token = request.COOKIES.get("jwt")
+    auth = request.headers['Authorization']
+    token = auth.replace("Bearer ", "")
     payload = jwt.decode(token, 'secret', algorithms=['HS256'])
     user = User.objects.filter(id=payload['id']).first()
     if serializer.is_valid(raise_exception=True):
@@ -84,7 +89,8 @@ def PostLikeUnlikeView(request):
     if not qs.exists():
         return Response({}, status=404)
     obj = qs.first()
-    token = request.COOKIES.get("jwt")
+    auth = request.headers['Authorization']
+    token = auth.replace("Bearer ", "")
     payload = jwt.decode(token, 'secret', algorithms=['HS256'])
     user = User.objects.filter(id=payload['id']).first()
 

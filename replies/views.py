@@ -18,30 +18,37 @@ from users.decorators import login_required
 
 @api_view(['GET'])
 def ReplyListView(request):
+    context = {"request" : request}
     qs = Reply.objects.all()
-    serializer = ReplySerializer(qs, many=True)
+    serializer = ReplySerializer(qs, many=True, context=context)
     data = serializer.data
     return Response(data, status=200)
 
 @api_view(['GET'])
 def CommentRepliesView(request, id):
+    context = {"request" : request}
     commentQs = Comment.objects.filter(id=id)
     if not commentQs:
         return Response({"detail" : "Comment not found"}, status=404)
     obj = commentQs.first()
     replyQs = Reply.objects.filter(comment=obj)
-    serializer = ReplySerializer(replyQs, many=True)
+    serializer = ReplySerializer(replyQs, many=True, context=context)
     data = serializer.data
     return Response(data, status=200)
 
 @api_view(['GET', 'DELETE'])
 def ReplyDetailDeleteView(request, id):
+    context = {"request" : request}
     qs = Reply.objects.filter(id=id)
     if not qs:
         return Response({"detail" : "Reply not found"}, status=404)
 
     obj = qs.first()
-    token = request.COOKIES.get("jwt")
+    try:
+        auth = request.headers['Authorization']
+        token = auth.replace("Bearer ", "")
+    except:
+        token = None
     if request.method == "DELETE":
         if not token:
             return Response({"detail" : "Unauthenticated"}, status=403)
@@ -53,14 +60,15 @@ def ReplyDetailDeleteView(request, id):
         if user == obj.user or user.is_superuser:
             obj.delete()
             return Response({"detail" : "Reply deleted"}, status=200)
-    serializer = ReplySerializer(obj)
+    serializer = ReplySerializer(obj, context=context)
     data = serializer.data
     return Response(data, status=200)
 
 @api_view(['POST'])
 @login_required
 def ReplyLikeUnlikeView(request):
-    serializer = ReplyActionSerializer(data=request.data)
+    context = {"request" : request}
+    serializer = ReplyActionSerializer(data=request.data, context=context)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
     id = data.get("id")
@@ -69,17 +77,18 @@ def ReplyLikeUnlikeView(request):
     if not qs:
         return Response({"detail" : "Reply does not exist"}, status=404)
     obj = qs.first()
-    token = request.COOKIES.get("jwt")
+    auth = request.headers['Authorization']
+    token = auth.replace("Bearer ", "")
     payload = jwt.decode(token, 'secret', algorithms=['HS256'])
     user = User.objects.filter(id=payload['id']).first()
 
     if action == "like":
         obj.likes.add(user)
-        serializer = ReplySerializer(obj)
+        serializer = ReplySerializer(obj, context=context)
         return Response(serializer.data, status=200)
     elif action == "unlike":
         obj.likes.remove(user)
-        serializer = ReplySerializer(obj)
+        serializer = ReplySerializer(obj, context=context)
         return Response(serializer.data, status=200)
 
     return Response({}, status=401)
@@ -87,18 +96,20 @@ def ReplyLikeUnlikeView(request):
 @api_view(['POST'])
 @login_required
 def ReplyCreateView(request):
+    context = {"request" : request}
     data = request.data
     comment_id = data.get("comment")
     if not comment_id:
         return Response({"detail" : "Comment not given"}, status=401)
-    serializer = ReplySerializer(data=data)
+    serializer = ReplySerializer(data=data, context=context)
     serializer.is_valid(raise_exception=True)
     comments = Comment.objects.filter(id=int(data.get("comment")))
     if not comments:
         return Response({"detail" : "Comment does not exist"}, status=404)
 
     comment = comments.first()
-    token = request.COOKIES.get("jwt")
+    auth = request.headers['Authorization']
+    token = auth.replace("Bearer ", "")
     payload = jwt.decode(token, 'secret', algorithms=['HS256'])
     user = User.objects.filter(id=payload['id']).first()
 

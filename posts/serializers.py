@@ -21,7 +21,11 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_can_edit(self, obj):
         request = self.context['request']
-        token = request.COOKIES.get("jwt")
+        try:
+            auth = request.headers['Authorization']
+            token = auth.replace("Bearer ", "")
+        except:
+            token = None
         if not token:
             return False
         try:

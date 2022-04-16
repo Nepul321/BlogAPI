@@ -174,7 +174,7 @@ AWS_STORAGE_BUCKET_NAME=LINODE_BUCKET
 if DEBUG:
     CORS_ORIGIN_ALLOW_ALL = True
 else:
-    CORS_ALLOWED_ORIGINS = ['http://localhost:3000', 'http://localhost:5000', 'http://127.0.0.1:5500']
+    CORS_ALLOWED_ORIGINS = ['http://localhost:3000', 'http://localhost:3000', 'http://127.0.0.1:5500']
 
 CORS_ALLOW_CREDENTIALS = True
 
